@@ -1,0 +1,19 @@
+doctype html
+html
+	head
+		link(rel='stylesheet' href='login.css')
+		link(href='https://fonts.googleapis.com/css?family=Roboto:400,400italic,700,700italic' rel='stylesheet' type='text/css')
+		link(rel="stylesheet" href="https://cdn.linearicons.com/free/1.0.0/icon-font.min.css")
+		script(src="jquery.min.js")
+		script(src="index.js")
+	body
+		div(class="main")
+			div(class="buffer")
+			div(class="login")
+				form(action="/login" method="post")
+					input(type='text' name="username" id="login" placeholder='username')
+					input(type='password' name="password" id="login" placeholder='password')
+					input(type="submit")
+				p(class="loginMessage")=message
+				div(class="inner")
+			div(class="buffer")

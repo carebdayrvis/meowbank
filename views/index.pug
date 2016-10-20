@@ -1,0 +1,86 @@
+doctype html
+html
+	head
+		link(rel='stylesheet' href='index.css')
+		link(href='https://fonts.googleapis.com/css?family=Roboto:400,400italic,700,700italic' rel='stylesheet' type='text/css')
+		link(rel="stylesheet" href="https://cdn.linearicons.com/free/1.0.0/icon-font.min.css")
+		script(src="jquery.min.js")
+		script(src="index.js")
+	body
+		div(id='main')
+			if !session.plaid_token 
+				.plaid-container
+					h2 It looks like you haven't linked your bank account. Can you please do that?
+					form(id="some-id" method="POST" action="/authenticate")
+					script(
+						src="https://cdn.plaid.com/link/stable/link-initialize.js" 
+						data-client-name="Meowdev Budget" 
+						data-form-id="some-id" 
+						data-key="0b55ca0ba7e88452eaccc44760158d" 
+						data-product="connect" 
+						data-env="tartan"
+					)
+			else 
+				div(class="field_container" id='balance')
+					span(class="nav_button lnr lnr-list")
+					div(class='overview_field')
+						div(style="float:left")
+							each account in info.accounts
+								span.overview_header #{account.meta.name}: 
+								if account.subtype == "checking"
+									span.overview_header(id="current")= account.balance.available
+								else 
+									span.overview_header= account.balance.available
+								br
+						div(style="float:right")
+							span.overview_description Updated #{info.accounts[0].updated}
+							a(class="refresh nav_button lnr lnr-sync" style="text-decoration: none; float: right" href="/refresh")
+
+				div(class="budgets_container")
+					div(class="field_container" id='budgeted')
+						span(class="nav_button lnr lnr-calendar-full" onclick="expand(this)")
+						div(class='overview_field')
+							span(class='overview_header' id="budgeted_amount")= info.budget.budgeted
+							div(class='field_list')
+								table
+									tbody(id="budget_tbody")
+										each t in info.items 
+											- item_class = t.active ? "" : "inactive_item"
+											- inc = "change(" + t.id + ")"
+											- dec = "change(" + t.id + ", true)"
+											- rem = "removeItem(" + t.id + ")"
+											- edit = "edit(" + t.id + ")"
+											- act = "active(" + t.id + ")"
+											- cost = t.id + "_cost"
+												tr(class=item_class id=t.id) 
+													td=t.description
+													td(class="show_arrows_on_hover")
+														span(id=cost)=t.cost
+														span
+															span(onclick=inc class="arrow lnr lnr-chevron-up")
+															span(onclick=dec class="arrow lnr lnr-chevron-down")
+													td=t.due
+													td(class="display_on_hover")
+														//-span(class="small lnr lnr-pencil clickable" onclick="edit(this)")
+														span(class="small lnr lnr-checkmark-circle clickable" onclick=act)
+														span(class="small lnr lnr-circle-minus clickable" onclick=rem)
+									tr(id="add_item")
+										td
+											input(name="add_description")
+										td
+											input(name="add_amount")
+										td
+											input(name="add_due")
+								span(id="add_item_button" class="add nav_button lnr lnr-plus-circle" onclick="toggleAdd()")
+								span(id="submit_item_button" class="add nav_button lnr lnr-checkmark-circle" onclick="submit()")
+
+
+				div(class="field_container" id='safe_to_spend')
+					span(class='nav_button lnr lnr-user' onclick="expand(this)")
+					div(class='overview_field')
+						span(class='overview_header' id="safe")= info.budget.available
+						span(class='overview_description')
+							| Safe to Spend
+
+				script.
+					var info = !{JSON.stringify(info)}
